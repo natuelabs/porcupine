@@ -1,5 +1,8 @@
 # Porcupine
 
+[![Build Status](https://travis-ci.org/natuelabs/porcupine.svg?branch=master)](https://travis-ci.org/natuelabs/porcupine) [![bnpm version](http://img.shields.io/npm/v/porcupine.svg?style=flat)](https://www.npmjs.org/package/porcupine) [![npm downloads](http://img.shields.io/npm/dm/porcupine.svg?style=flat)](https://www.npmjs.org/package/porcupine) [![Dependency Status](http://img.shields.io/gemnasium/natuelabs/porcupine.svg?style=flat)](https://gemnasium.com/natuelabs/porcupine) [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
+
+
 > A NodeJS package to integrate development tools.
 
 # Getting Started
