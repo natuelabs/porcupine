@@ -1,6 +1,6 @@
 {
   "name" : "porcupine",
-  "version" : "0.1.0",
+  "version" : "0.1.1",
   "description" : "Service to integrate development tools",
   "author" : {
     "name" : "Natue",
