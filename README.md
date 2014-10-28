@@ -58,7 +58,7 @@ var config = {
   }
 };
 
-// By default Backhole will run over the port 3000
+// By default Porcupine will run over the port 3000
 porcupine.init( config, 3000 );
 
 function handleTrelloCardCreated ( data ) {
