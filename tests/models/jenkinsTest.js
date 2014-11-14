@@ -45,7 +45,7 @@ exports.testModelJenkins = {
       test.strictEqual( data.type, 'job.build' );
     };
 
-    var jenkins = new Jenkins( { } );
+    var jenkins = new Jenkins( {} );
 
     jenkins.eventEmitter.emit(
       jenkins.events.jenkins.job.build,
@@ -70,7 +70,7 @@ exports.testModelJenkins = {
     success : function ( test ) {
       test.expect( 2 );
 
-      var jenkins = new Jenkins( { } );
+      var jenkins = new Jenkins( {} );
 
       jenkins.request = function ( options, callback ) {
         callback(
@@ -83,7 +83,7 @@ exports.testModelJenkins = {
       jenkins.callApi(
         'test',
         'post',
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, null );
           test.strictEqual( response, '{"success":true}' );
@@ -106,7 +106,7 @@ exports.testModelJenkins = {
       error : function ( test ) {
         test.expect( 2 );
 
-        var jenkins = new Jenkins( { } );
+        var jenkins = new Jenkins( {} );
 
         jenkins.request = function ( options, callback ) {
           callback(
@@ -119,7 +119,7 @@ exports.testModelJenkins = {
         jenkins.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -137,7 +137,7 @@ exports.testModelJenkins = {
       statusCode : function ( test ) {
         test.expect( 2 );
 
-        var jenkins = new Jenkins( { } );
+        var jenkins = new Jenkins( {} );
 
         jenkins.request = function ( options, callback ) {
           callback(
@@ -150,7 +150,7 @@ exports.testModelJenkins = {
         jenkins.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -211,7 +211,7 @@ exports.testModelJenkins = {
     params : function ( test ) {
       test.expect( 3 );
 
-      var jenkins = new Jenkins( { } );
+      var jenkins = new Jenkins( {} );
       var dataTest = {
         job : 'testJob',
         params : {
@@ -239,7 +239,7 @@ exports.testModelJenkins = {
     noParams : function ( test ) {
       test.expect( 3 );
 
-      var jenkins = new Jenkins( { } );
+      var jenkins = new Jenkins( {} );
       var dataTest = {
         job : 'testJob'
       };

@@ -53,7 +53,7 @@ exports.testModelGithub = {
       test.strictEqual( data.type, 'issueComment.create' );
     };
 
-    var github = new Github( { } );
+    var github = new Github( {} );
 
     github.eventEmitter.emit(
       github.events.github.issue.create,
@@ -90,7 +90,7 @@ exports.testModelGithub = {
     success : function ( test ) {
       test.expect( 2 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
 
       github.request = function ( options, callback ) {
         callback(
@@ -103,7 +103,7 @@ exports.testModelGithub = {
       github.callApi(
         'test',
         'post',
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, null );
           test.strictEqual( response.success, true );
@@ -126,7 +126,7 @@ exports.testModelGithub = {
       error : function ( test ) {
         test.expect( 2 );
 
-        var github = new Github( { } );
+        var github = new Github( {} );
 
         github.request = function ( options, callback ) {
           callback(
@@ -139,7 +139,7 @@ exports.testModelGithub = {
         github.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -157,7 +157,7 @@ exports.testModelGithub = {
       statusCode : function ( test ) {
         test.expect( 2 );
 
-        var github = new Github( { } );
+        var github = new Github( {} );
 
         github.request = function ( options, callback ) {
           callback(
@@ -170,7 +170,7 @@ exports.testModelGithub = {
         github.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -201,8 +201,8 @@ exports.testModelGithub = {
         test.strictEqual( options.method, 'post' );
         test.strictEqual( options.headers.Authorization, 'token ' + config.oauthToken );
         test.strictEqual( options.headers.Accept, 'application/vnd.github.v3+json' );
-        test.strictEqual( options.headers['Content-Type'], 'application/json' );
-        test.strictEqual( options.headers['User-Agent'], github.userAgent );
+        test.strictEqual( options.headers[ 'Content-Type' ], 'application/json' );
+        test.strictEqual( options.headers[ 'User-Agent' ], github.userAgent );
         test.strictEqual( options.body, '{"test":true}' );
       };
 
@@ -231,12 +231,16 @@ exports.testModelGithub = {
     issue : function ( test ) {
       test.expect( 1 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var req = {
         'get' : function () {
           return 'issue';
         },
         test : true,
+      };
+
+      github.validateRequest = function () {
+        return true;
       };
 
       github.processIssue = function ( req ) {
@@ -256,12 +260,16 @@ exports.testModelGithub = {
     issueComment : function ( test ) {
       test.expect( 1 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var req = {
         'get' : function () {
           return 'issue_comment';
         },
         test : true,
+      };
+
+      github.validateRequest = function () {
+        return true;
       };
 
       github.processIssueComment = function ( req ) {
@@ -281,12 +289,16 @@ exports.testModelGithub = {
     push : function ( test ) {
       test.expect( 1 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var req = {
         'get' : function () {
           return 'push';
         },
         test : true,
+      };
+
+      github.validateRequest = function () {
+        return true;
       };
 
       github.processPush = function ( req ) {
@@ -306,12 +318,16 @@ exports.testModelGithub = {
     release : function ( test ) {
       test.expect( 1 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var req = {
         'get' : function () {
           return 'release';
         },
         test : true,
+      };
+
+      github.validateRequest = function () {
+        return true;
       };
 
       github.processRelease = function ( req ) {
@@ -322,6 +338,90 @@ exports.testModelGithub = {
 
       test.done();
     },
+  },
+
+  /**
+   * validateRequest
+   */
+  validateRequest : {
+
+    /**
+     * validateRequest notSecure
+     *
+     * @param test
+     */
+    notSecure : function ( test ) {
+      test.expect( 1 );
+
+      var github = new Github( {} );
+
+      test.strictEqual(
+        github.validateRequest( {} ),
+        true
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest invalidRequest
+     *
+     * @param test
+     */
+    invalidRequest : function ( test ) {
+      test.expect( 1 );
+
+      var github = new Github(
+        {
+          secret : 'test',
+          callBackUrl : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-hub-signature' : 'wrong-hash'
+        }
+      };
+
+      test.equals(
+        github.validateRequest( req ),
+        false
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest validRequest
+     *
+     * @param test
+     */
+    validRequest : function ( test ) {
+      test.expect( 1 );
+
+      var github = new Github(
+        {
+          secret : 'test',
+          callBackUrl : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-hub-signature' : 'sha1=6f8a021dc6bec1a7c3f97dda5535d8da76c38ee2'
+        }
+      };
+
+      test.equals(
+        github.validateRequest( req ),
+        true
+      );
+
+      test.done();
+    }
   },
 
   /**
@@ -348,7 +448,7 @@ exports.testModelGithub = {
       },
     };
 
-    var github = new Github( { } );
+    var github = new Github( {} );
 
     github.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -395,7 +495,7 @@ exports.testModelGithub = {
       },
     };
 
-    var github = new Github( { } );
+    var github = new Github( {} );
 
     github.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -439,7 +539,7 @@ exports.testModelGithub = {
       },
     };
 
-    var github = new Github( { } );
+    var github = new Github( {} );
 
     github.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -483,7 +583,7 @@ exports.testModelGithub = {
       },
     };
 
-    var github = new Github( { } );
+    var github = new Github( {} );
 
     github.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -516,7 +616,7 @@ exports.testModelGithub = {
     callApi : function ( test ) {
       test.expect( 4 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var dataTest = {
         owner : 'test_owner',
         repo : 'test_repo',
@@ -545,7 +645,7 @@ exports.testModelGithub = {
     callbackSuccess : function ( test ) {
       test.expect( 6 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var responseData = {
         number : 'test_number',
         title : 'test_title',
@@ -561,7 +661,7 @@ exports.testModelGithub = {
       };
 
       github.handleIssueCreate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, false );
           test.strictEqual( response.id, responseData.number );
@@ -583,14 +683,14 @@ exports.testModelGithub = {
     callbackError : function ( test ) {
       test.expect( 2 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
 
       github.callApi = function ( apiPath, method, data, callback ) {
         callback( true, { test : true } );
       };
 
       github.handleIssueCreate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, true );
           test.strictEqual( response.test, true );
@@ -614,7 +714,7 @@ exports.testModelGithub = {
     callApi : function ( test ) {
       test.expect( 5 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var dataTest = {
         owner : 'test_owner',
         repo : 'test_repo',
@@ -646,7 +746,7 @@ exports.testModelGithub = {
     callbackSuccess : function ( test ) {
       test.expect( 6 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var responseData = {
         number : 'test_number',
         title : 'test_title',
@@ -662,7 +762,7 @@ exports.testModelGithub = {
       };
 
       github.handleIssueUpdate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, false );
           test.strictEqual( response.id, responseData.number );
@@ -684,14 +784,14 @@ exports.testModelGithub = {
     callbackError : function ( test ) {
       test.expect( 2 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
 
       github.callApi = function ( apiPath, method, data, callback ) {
         callback( true, { test : true } );
       };
 
       github.handleIssueUpdate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, true );
           test.strictEqual( response.test, true );
@@ -715,7 +815,7 @@ exports.testModelGithub = {
     callApi : function ( test ) {
       test.expect( 3 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var dataTest = {
         owner : 'test_owner',
         repo : 'test_repo',
@@ -745,7 +845,7 @@ exports.testModelGithub = {
     callbackSuccess : function ( test ) {
       test.expect( 4 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
       var responseData = {
         id : 'test_id',
         body : 'test_body',
@@ -759,7 +859,7 @@ exports.testModelGithub = {
       };
 
       github.handleIssueCommentCreate(
-        { card : { } },
+        { card : {} },
         function ( error, response ) {
           test.strictEqual( error, false );
           test.strictEqual( response.id, responseData.id );
@@ -779,14 +879,99 @@ exports.testModelGithub = {
     callbackError : function ( test ) {
       test.expect( 2 );
 
-      var github = new Github( { } );
+      var github = new Github( {} );
 
       github.callApi = function ( apiPath, method, data, callback ) {
         callback( true, { test : true } );
       };
 
       github.handleIssueCommentCreate(
-        { card : { } },
+        { card : {} },
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
+
+  /**
+   * handleIssueMemberCreate method
+   */
+  handleIssueMemberCreate : {
+
+    /**
+     * handleIssueMemberCreate callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 3 );
+
+      var github = new Github( {} );
+      var dataTest = {
+        owner : 'test_owner',
+        repo : 'test_repo',
+        username : 'test_username',
+        card : {
+          id : 'test_id'
+        }
+      };
+
+      github.callApi = function ( apiPath, method, data ) {
+        test.strictEqual( apiPath, '/repos/' + dataTest.owner + '/' + dataTest.repo + '/issues/' + dataTest.card.id );
+        test.strictEqual( method, 'PATCH' );
+        test.strictEqual( data.assignee, dataTest.username );
+      };
+
+      github.handleIssueMemberCreate( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleIssueMemberCreate callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 1 );
+
+      var github = new Github( {} );
+
+      github.callApi = function ( apiPath, method, data, callback ) {
+        callback( false );
+      };
+
+      github.handleIssueMemberCreate(
+        { card : {} },
+        function ( error ) {
+          test.strictEqual( error, false );
+        }
+      );
+
+      test.done();
+    },
+
+    /**s
+     * handleIssueMemberCreate callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var github = new Github( {} );
+
+      github.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      github.handleIssueMemberCreate(
+        { card : {} },
         function ( error, response ) {
           test.strictEqual( error, true );
           test.strictEqual( response.test, true );

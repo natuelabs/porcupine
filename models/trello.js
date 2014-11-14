@@ -8,6 +8,7 @@ function Trello ( config ) {
 
   this.config = config;
   this.request = require( 'request' );
+  this.crypto = require( 'crypto' );
   this.events = require( './events' );
   this.eventEmitter = require( './eventEmitter' );
   this.apiUrl = 'https://api.trello.com/1';
@@ -28,6 +29,11 @@ Trello.prototype.initEvents = function () {
   this.eventEmitter.on(
     this.events.trello.cardComment.create,
     this.handleCardCommentCreate.bind( this )
+  );
+
+  this.eventEmitter.on(
+    this.events.trello.cardAttachment.create,
+    this.handleCardAttachmentCreate.bind( this )
   );
 };
 
@@ -87,6 +93,12 @@ Trello.prototype.process = function ( req ) {
     type = req.body.action.type;
   }
 
+  if ( this.validateRequest( req ) === false ) {
+    console.log( '[-->] Trello request is invalid' );
+
+    return false;
+  }
+
   switch ( type ) {
     case 'createCard':
       this.processCreatedCard( req );
@@ -100,7 +112,28 @@ Trello.prototype.process = function ( req ) {
     case 'addAttachmentToCard':
       this.processAttachmentCard( req );
       break;
+    case 'addMemberToCard':
+      this.processMemberCard( req );
+      break;
   }
+};
+
+/**
+ * Validate request
+ *
+ * @param req
+ */
+Trello.prototype.validateRequest = function ( req ) {
+  if ( this.config.secret === undefined || this.config.callBackUrl === undefined ) {
+    console.log( '[-->] Trello security is not in use' );
+
+    return true;
+  }
+
+  var hash = this.crypto.createHmac( 'sha1', this.config.secret )
+    .update( JSON.stringify( req.body ) + this.config.callBackUrl );
+
+  return hash.digest( 'base64' ) === req.headers[ 'x-trello-webhook' ];
 };
 
 /**
@@ -221,6 +254,36 @@ Trello.prototype.processAttachmentCard = function ( req ) {
 };
 
 /**
+ * Process member card hook
+ *
+ * @param  {Object} req
+ */
+Trello.prototype.processMemberCard = function ( req ) {
+  var eventName = this.events.trello.cardMember.created;
+
+  /** @see events documentation */
+  var data = {
+    name : req.body.action.member.fullName,
+    username : req.body.action.member.username,
+    user : {
+      name : req.body.action.memberCreator.fullName,
+      username : req.body.action.memberCreator.username,
+      avatarHash : req.body.action.memberCreator.avatarHash
+    },
+    card : {
+      id : req.body.action.data.card.id,
+      title : req.body.action.data.card.name
+    },
+    board : {
+      id : req.body.action.data.board.id,
+      name : req.body.action.data.board.name
+    }
+  };
+
+  this.eventEmitter.emit( eventName, data );
+};
+
+/**
  * @see events documentation
  *
  * @param data
@@ -309,6 +372,41 @@ Trello.prototype.handleCardCommentCreate = function ( data, callback ) {
     'POST',
     {
       text : data.text || undefined
+    },
+    processData
+  );
+};
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Trello.prototype.handleCardAttachmentCreate = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    /** @see events documentation */
+    var responseData = {
+      card : {
+        id : response.id
+      }
+    };
+
+    callback( error, responseData );
+  };
+
+  this.callApi(
+    '/cards/' + data.id + '/attachments',
+    'POST',
+    {
+      url : data.url,
+      name : data.name || undefined
     },
     processData
   );

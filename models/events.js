@@ -105,6 +105,27 @@ var events = {
       created : 'github__issueComment__created'
     },
 
+    issueMember : {
+      /**
+       * data = {
+       *  owner,
+       *  repo,
+       *  card = {
+       *    id
+       *  },
+       *  username
+       * }
+       *
+       * @param data
+       * @param callback
+       *
+       * response = { }
+       *
+       * @return response
+       */
+      create : 'github__issueMember__create'
+    },
+
     push : {
       /**
        * response = {
@@ -276,6 +297,26 @@ var events = {
 
     cardAttachment : {
       /**
+       * data = {
+       *  id,
+       *  url,
+       *  name
+       * }
+       *
+       * @param data
+       * @param callback
+       *
+       * response = {
+       *  card : {
+       *    id
+       *  }
+       * }
+       *
+       * @return response
+       */
+      create : 'trello__cardAttachment__create',
+
+      /**
        * response = {
        *  url,
        *  name,
@@ -297,6 +338,31 @@ var events = {
        * @return response
        */
       created : 'trello__cardAttachment__created'
+    },
+
+    cardMember : {
+      /**
+       * response = {
+       *  name,
+       *  username,
+       *  user : {
+       *    name,
+       *    username,
+       *    avatarHash
+       *  }
+       *  card : {
+       *    id,
+       *    name
+       *  }
+       *  board : {
+       *    id,
+       *    name
+       *  }
+       * }
+       *
+       * @return response
+       */
+      created : 'trello__cardMember__created'
     }
   },
 

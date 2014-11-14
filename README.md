@@ -20,6 +20,7 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
     - Create issue
     - Update issue
     - Create issue comment
+    - Assign issue user
 
 ## Trello
 
@@ -28,8 +29,10 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
     - Card updated
     - Card comment created
     - Card attachment created
+    - Card user assigned
 - Calls
     - Update card
+    - Attach URL to card
 
 ## Jenkins
 
@@ -50,11 +53,14 @@ var events = porcupine.getEvents();
 
 var config = {
   github : {
-    oauthToken : 'your_token'
+    oauthToken : 'your-token',
+    secret : 'your-secret'
   },
   trello : {
-    key : 'your_key',
-    token : 'your_token'
+    key : 'your-key',
+    token : 'your-token',
+    secret : 'your-secret',
+    callBackUrl 'https://your-porcupine-url/trello'
   }
 };
 
@@ -100,7 +106,8 @@ The configs will also enable each one of the integrations so, if not setted, the
 ```js
 var config = {
   github : {
-    oauthToken : 'your_token'
+    oauthToken : 'your-token',
+    secret : 'create-your-own-secret'
   }
 };
 ```
@@ -110,8 +117,10 @@ var config = {
 ```js
 var config = {
   trello : {
-    key : 'your_key',
-    token : 'your_token'
+    key : 'your-key',
+    token : 'your-token'
+    secret : 'your-secret',
+    callBackUrl : 'https://your-porcupine-url/trello'
   }
 };
 ```
@@ -121,9 +130,9 @@ var config = {
 ```js
 var config = {
   jenkins : {
-    baseUrl : 'http://your_jenkins_url.com',
-    user : 'jenkins_user',
-    pass : 'jenkins_pass'
+    baseUrl : 'https://your-jenkins-url.com',
+    user : 'jenkins-user',
+    pass : 'jenkins-pass'
   }
 };
 ```
@@ -136,7 +145,8 @@ To use hooks you have to create them for Trello and GitHub. The easiest way is t
 
 You can find more information about GitHub hooks [here](http://developer.github.com/v3/repos/hooks/).
 
-- [Create a token](https://github.com/settings/applications)
+- [Create a token](https://github.com/settings/applications) *(grant access to `repo` and `admin:repo_hook`)*
+
 - [Create a hook](http://developer.github.com/v3/repos/hooks/#create-a-hook):
 
 ```
@@ -163,7 +173,8 @@ Body:
   "config": {
     "url": "https://:your_installation_url:/github",
     "content_type": "json",
-    "insecure_ssl": "1"
+    "insecure_ssl": "1",
+    "secret": "your-secret"
   }
 }
 ```
@@ -213,6 +224,13 @@ URL: https://trello.com/1/board/:short_id:
 ```
 Method: POST
 URL: https://trello.com/1/tokens/:token:/webhooks/?key=:key:
+```
+
+*There is a Trello bug with this API call that forces you to send some headers:*
+
+```
+Accept: application/json
+Content-Type: application/json
 ```
 
 Body:
