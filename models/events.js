@@ -168,6 +168,34 @@ var events = {
 
     card : {
       /**
+       * data = {
+       *  id,
+       *  board : {
+       *    id
+       *  }
+       * }
+       *
+       * @param data
+       * @param callback
+       *
+       * response = {
+       *  id,
+       *  title,
+       *  body,
+       *  closed,
+       *  board : {
+       *    id
+       *  },
+       *  list : {
+       *    id
+       *  }
+       * }
+       *
+       * @return response
+       */
+      read : 'trello__card__read',
+
+      /**
        * response = {
        *  id,
        *  title,
@@ -242,7 +270,30 @@ var events = {
        *
        * @return response
        */
-      updated : 'trello__card__updated'
+      updated : 'trello__card__updated',
+
+      /**
+       * response = {
+       *  id,
+       *  title,
+       *  body,
+       *  closed,
+       *  user : {
+       *    name,
+       *    username,
+       *    avatarHash
+       *  }
+       *  board : {
+       *    id
+       *  },
+       *  list : {
+       *    id
+       *  }
+       * }
+       *
+       * @return response
+       */
+      boardMoved : 'trello__card__boardMove'
     },
 
     cardComment : {

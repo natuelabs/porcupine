@@ -187,7 +187,7 @@ exports.testModelTrello = {
       var trello = new Trello( config );
 
       trello.request = function ( options ) {
-        test.strictEqual( options.url, trello.apiUrl + 'test?key=' + config.key );
+        test.strictEqual( options.url, trello.apiUrl + 'test?key=' + config.key + '&token=' + config.token );
         test.strictEqual( options.method, 'post' );
         test.strictEqual( options.headers[ 'Content-Type' ], 'application/json' );
         test.strictEqual( options.headers[ 'User-Agent' ], trello.userAgent );
@@ -973,6 +973,99 @@ exports.testModelTrello = {
       };
 
       trello.handleCardAttachmentCreate(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
+
+  /**
+   * handleCardRead method
+   */
+  handleCardRead : {
+
+    /**
+     * handleCardRead callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+      var dataTest = {
+        id : 'idTest'
+      };
+
+      trello.callApi = function ( apiPath, method ) {
+        test.strictEqual( apiPath, '/cards/' + dataTest.id );
+        test.strictEqual( method, 'GET' );
+      };
+
+      trello.handleCardRead( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 7 );
+
+      var trello = new Trello( {} );
+      var responseData = {
+        id : 'testId',
+        name : 'testTitle',
+        desc : 'testBody',
+        closed : 'testClosed',
+        idBoard : 'testBoardId',
+        idList : 'testListId'
+      };
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( false, responseData );
+      };
+
+      trello.handleCardRead(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, false );
+          test.strictEqual( response.id, responseData.id );
+          test.strictEqual( response.title, responseData.name );
+          test.strictEqual( response.body, responseData.desc );
+          test.strictEqual( response.closed, responseData.closed );
+          test.strictEqual( response.board.id, responseData.idBoard );
+          test.strictEqual( response.list.id, responseData.idList );
+        }
+      );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      trello.handleCardRead(
         {},
         function ( error, response ) {
           test.strictEqual( error, true );

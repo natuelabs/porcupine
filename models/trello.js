@@ -35,6 +35,11 @@ Trello.prototype.initEvents = function () {
     this.events.trello.cardAttachment.create,
     this.handleCardAttachmentCreate.bind( this )
   );
+
+  this.eventEmitter.on(
+    this.events.trello.card.read,
+    this.handleCardRead.bind( this )
+  );
 };
 
 /**
@@ -52,7 +57,7 @@ Trello.prototype.callApi = function ( apiPath, method, data, callback ) {
   data.key = this.config.key;
 
   var options = {
-    url : this.apiUrl + apiPath + '?key=' + this.config.key,
+    url : this.apiUrl + apiPath + '?key=' + this.config.key + '&token=' + this.config.token,
     method : method,
     headers : {
       'Content-Type' : 'application/json',
@@ -114,6 +119,9 @@ Trello.prototype.process = function ( req ) {
       break;
     case 'addMemberToCard':
       this.processMemberCard( req );
+      break;
+    case 'moveCardToBoard':
+      this.processMoveCardBoard( req );
       break;
   }
 };
@@ -284,6 +292,38 @@ Trello.prototype.processMemberCard = function ( req ) {
 };
 
 /**
+ * Process move card board hook
+ *
+ * @param  {Object} req
+ */
+Trello.prototype.processMoveCardBoard = function ( req ) {
+  var eventName = this.events.trello.card.boardMoved;
+
+  // boardMoved event only have id so we use card read to return data
+  this.eventEmitter.emit(
+    this.events.trello.card.read,
+    {
+      id : req.body.action.data.card.id
+    },
+    function callback ( err, response ) {
+      if ( err ) {
+        this.log( err, response );
+
+        return;
+      }
+
+      response.user = {
+        name : req.body.action.memberCreator.fullName,
+        username : req.body.action.memberCreator.username,
+        avatarHash : req.body.action.memberCreator.avatarHash
+      };
+
+      this.eventEmitter.emit( eventName, response );
+    }.bind( this )
+  );
+};
+
+/**
  * @see events documentation
  *
  * @param data
@@ -408,6 +448,45 @@ Trello.prototype.handleCardAttachmentCreate = function ( data, callback ) {
       url : data.url,
       name : data.name || undefined
     },
+    processData
+  );
+};
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Trello.prototype.handleCardRead = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    /** @see events documentation */
+    var responseData = {
+      id : response.id,
+      title : response.name,
+      body : response.desc,
+      closed : response.closed,
+      board : {
+        id : response.idBoard
+      },
+      list : {
+        id : response.idList
+      }
+    };
+
+    callback( error, responseData );
+  };
+
+  this.callApi(
+    '/cards/' + data.id,
+    'GET',
+    {},
     processData
   );
 };
