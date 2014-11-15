@@ -21,6 +21,7 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
     - Update issue
     - Create issue comment
     - Assign issue user
+    - Set commit status
 
 ## Trello
 
