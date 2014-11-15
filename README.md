@@ -36,6 +36,8 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
 
 ## Jenkins
 
+- Hooks
+    - Commit built
 - Calls
     - Build job
 
@@ -132,7 +134,8 @@ var config = {
   jenkins : {
     baseUrl : 'https://your-jenkins-url.com',
     user : 'jenkins-user',
-    pass : 'jenkins-pass'
+    pass : 'jenkins-pass',
+    secret : 'create-your-own-secret'
   }
 };
 ```
@@ -261,6 +264,57 @@ URL: https://trello.com/1/tokens/:token:/webhooks/:hook_id:/?key=:key:
 
 - Accepts self-signed certificates;
 - It's not possible to use a different port than 443 for HTTPS on hooks;
+
+## Jenkins hooks
+
+Jenkins hooks have to be called inside your job script.
+
+Porcupine is expecting two headers:
+
+ - `x-jenkins-signature`: A sha1 hmac hash of the content using the configured secret on config.secret
+ - `x-jenkins-event`: A string that defines the hook event
+
+### Events
+
+The supported events are:
+
+- `commit`: This event is used for continuous integration and should contain the commit hash, the status of the build, job name and the build URL, for example:
+
+```json
+{
+    "commit" : "574607f5e8a49a2c82475737484f193856d4b430",
+    "status" : true,
+    "job" : "job-name",
+    "buildUrl" : "https://jenkins-url/job/job-name/1"
+}
+```
+
+Possible statuses are: `pending`, `success`, `error` and `failure`
+
+### How to do it
+
+Here goes an example using bash:
+
+```bash
+SECRET="your-secret"
+
+LOAD="{\"commit\":\"${COMMIT}\",\"status\":\"pending\",\"job\":\"${JOB_NAME}\",\"buildUrl\":\"${BUILD_URL}\"}"
+SECURITY=`echo -n $LOAD | openssl sha1 -hmac $SECRET | sed 's/^.* //'`
+curl -d $LOAD -H "Content-Type: application/json" -H "x-jenkins-signature: ${SECURITY}" -H "x-jenkins-event: commit" https://your-porcupine-url/jenkins
+
+ant build
+
+if [ $? -eq 0 ]
+then
+    STATUS="success"
+else
+    STATUS="failure"
+fi
+
+LOAD="{\"commit\":\"${COMMIT}\",\"status\":\"${STATUS}\",\"job\":\"${JOB_NAME}\",\"buildUrl\":\"${BUILD_URL}\"}"
+SECURITY=`echo -n $LOAD | openssl sha1 -hmac $SECRET | sed 's/^.* //'`
+curl -d $LOAD -H "Content-Type: application/json" -H "x-jenkins-signature: ${SECURITY}" -H "x-jenkins-event: commit" https://your-porcupine-url/jenkins
+```
 
 # Example
 

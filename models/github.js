@@ -40,6 +40,11 @@ Github.prototype.initEvents = function () {
     this.events.github.issueMember.create,
     this.handleIssueMemberCreate.bind( this )
   );
+
+  this.eventEmitter.on(
+    this.events.github.commit.status,
+    this.handleCommitStatus.bind( this )
+  );
 };
 
 /**
@@ -401,6 +406,34 @@ Github.prototype.handleIssueMemberCreate = function ( data, callback ) {
     'PATCH',
     {
       assignee : data.username
+    },
+    processData
+  );
+};
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Github.prototype.handleCommitStatus = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    callback( error );
+  };
+
+  this.callApi(
+    '/repos/' + data.owner + '/' + data.repo + '/statuses/' + data.commit,
+    'POST',
+    {
+      state : data.status,
+      target_url : data.buildUrl
     },
     processData
   );

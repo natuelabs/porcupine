@@ -161,6 +161,21 @@ var events = {
        * @return response
        */
       created : 'github__release__created'
+    },
+
+    commit : {
+      /**
+       * response = {
+       *  commit,
+       *  status,
+       *  buildUrl
+       *  owner
+       *  repo
+       * }
+       *
+       * @return response
+       */
+      status : 'github__commit__status'
     }
   },
 
@@ -418,6 +433,20 @@ var events = {
   },
 
   jenkins : {
+    commit : {
+      /**
+       * response = {
+       *  commit,
+       *  status,
+       *  job,
+       *  buildUrl
+       * }
+       *
+       * @return response
+       */
+      built : 'jenkins__commit__built'
+    },
+
     job : {
       /**
        * data = {

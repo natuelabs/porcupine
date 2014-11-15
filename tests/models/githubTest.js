@@ -981,4 +981,89 @@ exports.testModelGithub = {
       test.done();
     },
   },
+
+  /**
+   * handleCommitStatus method
+   */
+  handleCommitStatus : {
+
+    /**
+     * handleCommitStatus callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 4 );
+
+      var github = new Github( {} );
+      var dataTest = {
+        commit : 'testCommit',
+        status : 'testStatus',
+        buildUrl : 'testBuildUrl',
+        owner : 'testOwner',
+        repo : 'testRepo'
+      };
+
+      github.callApi = function ( apiPath, method, data ) {
+        test.strictEqual( apiPath, '/repos/' + dataTest.owner + '/' + dataTest.repo + '/statuses/' + dataTest.commit );
+        test.strictEqual( method, 'POST' );
+        test.strictEqual( data.state, dataTest.status );
+        test.strictEqual( data.target_url, dataTest.buildUrl );
+      };
+
+      github.handleCommitStatus( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleCommitStatus callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 1 );
+
+      var github = new Github( {} );
+
+      github.callApi = function ( apiPath, method, data, callback ) {
+        callback( false );
+      };
+
+      github.handleCommitStatus(
+        { card : {} },
+        function ( error ) {
+          test.strictEqual( error, false );
+        }
+      );
+
+      test.done();
+    },
+
+    /**s
+     * handleCommitStatus callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var github = new Github( {} );
+
+      github.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      github.handleCommitStatus(
+        { card : {} },
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
 };

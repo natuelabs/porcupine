@@ -199,6 +199,187 @@ exports.testModelJenkins = {
   },
 
   /**
+   * process method
+   */
+  process : {
+
+    /**
+     * process commit
+     *
+     * @param test
+     */
+    commit : function ( test ) {
+      test.expect( 1 );
+
+      var jenkins = new Jenkins( {} );
+      var req = {
+        'get' : function () {
+          return 'commit';
+        },
+        test : true
+      };
+
+      jenkins.validateRequest = function () {
+        return true;
+      };
+
+      jenkins.processCommit = function ( req ) {
+        test.strictEqual( req.test, true );
+      };
+
+      jenkins.process( req );
+
+      test.done();
+    }
+  },
+
+  /**
+   * validateRequest
+   */
+  validateRequest : {
+
+    /**
+     * validateRequest notSecure
+     *
+     * @param test
+     */
+    notSecure : function ( test ) {
+      test.expect( 1 );
+
+      var jenkins = new Jenkins( {} );
+
+      test.strictEqual(
+        jenkins.validateRequest( {} ),
+        true
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest invalidRequest
+     *
+     * @param test
+     */
+    invalidRequest : function ( test ) {
+      test.expect( 1 );
+
+      var jenkins = new Jenkins(
+        {
+          secret : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-jenkins-signature' : 'wrong-hash'
+        }
+      };
+
+      test.equals(
+        jenkins.validateRequest( req ),
+        false
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest validRequest
+     *
+     * @param test
+     */
+    validRequest : function ( test ) {
+      test.expect( 1 );
+
+      var jenkins = new Jenkins(
+        {
+          secret : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-jenkins-signature' : '6f8a021dc6bec1a7c3f97dda5535d8da76c38ee2'
+        }
+      };
+
+      test.equals(
+        jenkins.validateRequest( req ),
+        true
+      );
+
+      test.done();
+    }
+  },
+
+  /**
+   * processCommit method
+   */
+  processCommit : {
+
+    /**
+     * processCommit statusIncorrect
+     *
+     * @param test
+     */
+    statusIncorrect : function ( test ) {
+      test.expect( 1 );
+
+      var req = {
+        body : {
+          commit : 'testCommit',
+          status : 'testStatus',
+          job : 'testJob',
+          buildUrl : 'testBuildUrl'
+        }
+      };
+
+      var jenkins = new Jenkins( {} );
+
+      test.strictEqual( jenkins.processCommit( req ), false );
+
+      test.done();
+    },
+
+    /**
+     * processCommit statusCorrect
+     *
+     * @param test
+     */
+    statusCorrect : function ( test ) {
+      test.expect( 5 );
+
+      var req = {
+        body : {
+          commit : 'testCommit',
+          status : 'pending',
+          job : 'testJob',
+          buildUrl : 'testBuildUrl'
+        }
+      };
+
+      var jenkins = new Jenkins( {} );
+
+      jenkins.eventEmitter = {
+        emit : function ( eventName, data ) {
+          test.strictEqual( eventName, jenkins.events.jenkins.commit.built );
+          test.strictEqual( data.commit, req.body.commit );
+          test.strictEqual( data.status, req.body.status );
+          test.strictEqual( data.job, req.body.job );
+          test.strictEqual( data.buildUrl, req.body.buildUrl );
+        }
+      };
+
+      jenkins.processCommit( req );
+
+      test.done();
+    }
+  },
+
+  /**
    * handleJobBuild method
    */
   handleJobBuild : {
