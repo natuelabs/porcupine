@@ -63,7 +63,7 @@ var config = {
     key : 'your-key',
     token : 'your-token',
     secret : 'your-secret',
-    callBackUrl 'https://your-porcupine-url/trello'
+    callBackUrl : 'https://your-porcupine-url/trello'
   }
 };
 
