@@ -49,7 +49,7 @@ exports.testModelTrello = {
       test.strictEqual( data.type, 'cardComment.create' );
     };
 
-    var trello = new Trello( { } );
+    var trello = new Trello( {} );
 
     trello.eventEmitter.emit(
       trello.events.trello.card.update,
@@ -80,7 +80,7 @@ exports.testModelTrello = {
     success : function ( test ) {
       test.expect( 2 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
 
       trello.request = function ( options, callback ) {
         callback(
@@ -93,7 +93,7 @@ exports.testModelTrello = {
       trello.callApi(
         'test',
         'post',
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, null );
           test.strictEqual( response.success, true );
@@ -116,7 +116,7 @@ exports.testModelTrello = {
       error : function ( test ) {
         test.expect( 2 );
 
-        var trello = new Trello( { } );
+        var trello = new Trello( {} );
 
         trello.request = function ( options, callback ) {
           callback(
@@ -129,7 +129,7 @@ exports.testModelTrello = {
         trello.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -147,7 +147,7 @@ exports.testModelTrello = {
       statusCode : function ( test ) {
         test.expect( 2 );
 
-        var trello = new Trello( { } );
+        var trello = new Trello( {} );
 
         trello.request = function ( options, callback ) {
           callback(
@@ -160,7 +160,7 @@ exports.testModelTrello = {
         trello.callApi(
           'test',
           'post',
-          { },
+          {},
           function ( error, response ) {
             test.strictEqual( error, true );
             test.strictEqual( response, '{"success":false}' );
@@ -187,10 +187,10 @@ exports.testModelTrello = {
       var trello = new Trello( config );
 
       trello.request = function ( options ) {
-        test.strictEqual( options.url, trello.apiUrl + 'test?key=' + config.key );
+        test.strictEqual( options.url, trello.apiUrl + 'test?key=' + config.key + '&token=' + config.token );
         test.strictEqual( options.method, 'post' );
-        test.strictEqual( options.headers['Content-Type'], 'application/json' );
-        test.strictEqual( options.headers['User-Agent'], trello.userAgent );
+        test.strictEqual( options.headers[ 'Content-Type' ], 'application/json' );
+        test.strictEqual( options.headers[ 'User-Agent' ], trello.userAgent );
         test.strictEqual( options.body, '{"test":true,"token":"tokenTest","key":"keyTest"}' );
       };
 
@@ -219,7 +219,7 @@ exports.testModelTrello = {
     createCard : function ( test ) {
       test.expect( 1 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var req = {
         body : {
           action : {
@@ -227,6 +227,10 @@ exports.testModelTrello = {
           }
         },
         test : true
+      };
+
+      trello.validateRequest = function () {
+        return true;
       };
 
       trello.processCreatedCard = function ( req ) {
@@ -246,7 +250,7 @@ exports.testModelTrello = {
     updateCard : function ( test ) {
       test.expect( 1 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var req = {
         body : {
           action : {
@@ -254,6 +258,10 @@ exports.testModelTrello = {
           }
         },
         test : true
+      };
+
+      trello.validateRequest = function () {
+        return true;
       };
 
       trello.processUpdatedCard = function ( req ) {
@@ -273,7 +281,7 @@ exports.testModelTrello = {
     commentCard : function ( test ) {
       test.expect( 1 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var req = {
         body : {
           action : {
@@ -281,6 +289,10 @@ exports.testModelTrello = {
           }
         },
         test : true
+      };
+
+      trello.validateRequest = function () {
+        return true;
       };
 
       trello.processCommentCard = function ( req ) {
@@ -300,7 +312,7 @@ exports.testModelTrello = {
     addAttachmentToCard : function ( test ) {
       test.expect( 1 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var req = {
         body : {
           action : {
@@ -308,6 +320,10 @@ exports.testModelTrello = {
           }
         },
         test : true
+      };
+
+      trello.validateRequest = function () {
+        return true;
       };
 
       trello.processAttachmentCard = function ( req ) {
@@ -318,6 +334,90 @@ exports.testModelTrello = {
 
       test.done();
     },
+  },
+
+  /**
+   * validateRequest
+   */
+  validateRequest : {
+
+    /**
+     * validateRequest notSecure
+     *
+     * @param test
+     */
+    notSecure : function ( test ) {
+      test.expect( 1 );
+
+      var trello = new Trello( {} );
+
+      test.strictEqual(
+        trello.validateRequest( {} ),
+        true
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest invalidRequest
+     *
+     * @param test
+     */
+    invalidRequest : function ( test ) {
+      test.expect( 1 );
+
+      var trello = new Trello(
+        {
+          secret : 'test',
+          callBackUrl : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-trello-webhook' : 'wrong-hash'
+        }
+      };
+
+      test.equals(
+        trello.validateRequest( req ),
+        false
+      );
+
+      test.done();
+    },
+
+    /**
+     * validateRequest validRequest
+     *
+     * @param test
+     */
+    validRequest : function ( test ) {
+      test.expect( 1 );
+
+      var trello = new Trello(
+        {
+          secret : 'test',
+          callBackUrl : 'test'
+        }
+      );
+
+      var req = {
+        body : 'body',
+        headers : {
+          'x-trello-webhook' : 'yggMO4NvFSQmgstTRv5I01RPt6I='
+        }
+      };
+
+      test.equals(
+        trello.validateRequest( req ),
+        true
+      );
+
+      test.done();
+    }
   },
 
   /**
@@ -354,7 +454,7 @@ exports.testModelTrello = {
       }
     };
 
-    var trello = new Trello( { } );
+    var trello = new Trello( {} );
 
     trello.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -408,7 +508,7 @@ exports.testModelTrello = {
       }
     };
 
-    var trello = new Trello( { } );
+    var trello = new Trello( {} );
 
     trello.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -461,7 +561,7 @@ exports.testModelTrello = {
       }
     };
 
-    var trello = new Trello( { } );
+    var trello = new Trello( {} );
 
     trello.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -516,7 +616,7 @@ exports.testModelTrello = {
       }
     };
 
-    var trello = new Trello( { } );
+    var trello = new Trello( {} );
 
     trello.eventEmitter = {
       emit : function ( eventName, data ) {
@@ -539,6 +639,62 @@ exports.testModelTrello = {
   },
 
   /**
+   * processMemberCard method
+   *
+   * @param test
+   */
+  processMemberCard : function ( test ) {
+    test.expect( 10 );
+
+    var req = {
+      body : {
+        action : {
+          member : {
+            fullName : 'testName',
+            username : 'testUsername'
+          },
+          data : {
+            card : {
+              id : 'cardIdTest',
+              name : 'cardNameTest'
+            },
+            board : {
+              id : 'boardIdTest',
+              name : 'boardNameTest'
+            }
+          },
+          memberCreator : {
+            fullName : 'fullNameTest',
+            username : 'usernameTest',
+            avatarHash : 'avatarHashTest'
+          }
+        }
+      }
+    };
+
+    var trello = new Trello( {} );
+
+    trello.eventEmitter = {
+      emit : function ( eventName, data ) {
+        test.strictEqual( eventName, trello.events.trello.cardMember.created );
+        test.strictEqual( data.name, req.body.action.member.fullName );
+        test.strictEqual( data.username, req.body.action.member.username );
+        test.strictEqual( data.card.id, req.body.action.data.card.id );
+        test.strictEqual( data.card.title, req.body.action.data.card.name );
+        test.strictEqual( data.user.name, req.body.action.memberCreator.fullName );
+        test.strictEqual( data.user.username, req.body.action.memberCreator.username );
+        test.strictEqual( data.user.avatarHash, req.body.action.memberCreator.avatarHash );
+        test.strictEqual( data.board.id, req.body.action.data.board.id );
+        test.strictEqual( data.board.name, req.body.action.data.board.name );
+      }
+    };
+
+    trello.processMemberCard( req );
+
+    test.done();
+  },
+
+  /**
    * handleCardUpdate method
    */
   handleCardUpdate : {
@@ -551,7 +707,7 @@ exports.testModelTrello = {
     callApi : function ( test ) {
       test.expect( 6 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var dataTest = {
         id : 'idTest',
         title : 'titleTest',
@@ -584,7 +740,7 @@ exports.testModelTrello = {
     callbackSuccess : function ( test ) {
       test.expect( 7 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var responseData = {
         id : 'idTest',
         name : 'nameTest',
@@ -599,7 +755,7 @@ exports.testModelTrello = {
       };
 
       trello.handleCardUpdate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, false );
           test.strictEqual( response.id, responseData.id );
@@ -622,14 +778,14 @@ exports.testModelTrello = {
     callbackError : function ( test ) {
       test.expect( 2 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
 
       trello.callApi = function ( apiPath, method, data, callback ) {
         callback( true, { test : true } );
       };
 
       trello.handleCardUpdate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, true );
           test.strictEqual( response.test, true );
@@ -653,7 +809,7 @@ exports.testModelTrello = {
     callApi : function ( test ) {
       test.expect( 3 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var dataTest = {
         id : 'idTest',
         text : 'textTest'
@@ -679,7 +835,7 @@ exports.testModelTrello = {
     callbackSuccess : function ( test ) {
       test.expect( 7 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
       var responseData = {
         data : {
           text : 'textTest',
@@ -700,7 +856,7 @@ exports.testModelTrello = {
       };
 
       trello.handleCardCommentCreate(
-        { },
+        {},
         function ( error, response ) {
           test.strictEqual( error, false );
           test.strictEqual( response.text, responseData.data.text );
@@ -723,14 +879,194 @@ exports.testModelTrello = {
     callbackError : function ( test ) {
       test.expect( 2 );
 
-      var trello = new Trello( { } );
+      var trello = new Trello( {} );
 
       trello.callApi = function ( apiPath, method, data, callback ) {
         callback( true, { test : true } );
       };
 
       trello.handleCardCommentCreate(
-        { },
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
+
+  /**
+   * handleCardAttachmentCreate method
+   */
+  handleCardAttachmentCreate : {
+
+    /**
+     * handleCardAttachmentCreate callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 4 );
+
+      var trello = new Trello( {} );
+      var dataTest = {
+        id : 'idTest',
+        url : 'textUrl',
+        name : 'textName'
+      };
+
+      trello.callApi = function ( apiPath, method, data ) {
+        test.strictEqual( apiPath, '/cards/' + dataTest.id + '/attachments' );
+        test.strictEqual( method, 'POST' );
+        test.strictEqual( data.url, dataTest.url );
+        test.strictEqual( data.name, dataTest.name );
+      };
+
+      trello.handleCardAttachmentCreate( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+      var responseData = {
+        id : 'cardIdTest'
+      };
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( false, responseData );
+      };
+
+      trello.handleCardAttachmentCreate(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, false );
+          test.strictEqual( response.card.id, responseData.id );
+        }
+      );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      trello.handleCardAttachmentCreate(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
+
+  /**
+   * handleCardRead method
+   */
+  handleCardRead : {
+
+    /**
+     * handleCardRead callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+      var dataTest = {
+        id : 'idTest'
+      };
+
+      trello.callApi = function ( apiPath, method ) {
+        test.strictEqual( apiPath, '/cards/' + dataTest.id );
+        test.strictEqual( method, 'GET' );
+      };
+
+      trello.handleCardRead( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 7 );
+
+      var trello = new Trello( {} );
+      var responseData = {
+        id : 'testId',
+        name : 'testTitle',
+        desc : 'testBody',
+        closed : 'testClosed',
+        idBoard : 'testBoardId',
+        idList : 'testListId'
+      };
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( false, responseData );
+      };
+
+      trello.handleCardRead(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, false );
+          test.strictEqual( response.id, responseData.id );
+          test.strictEqual( response.title, responseData.name );
+          test.strictEqual( response.body, responseData.desc );
+          test.strictEqual( response.closed, responseData.closed );
+          test.strictEqual( response.board.id, responseData.idBoard );
+          test.strictEqual( response.list.id, responseData.idList );
+        }
+      );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      trello.handleCardRead(
+        {},
         function ( error, response ) {
           test.strictEqual( error, true );
           test.strictEqual( response.test, true );

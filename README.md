@@ -20,6 +20,8 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
     - Create issue
     - Update issue
     - Create issue comment
+    - Assign issue user
+    - Set commit status
 
 ## Trello
 
@@ -28,11 +30,15 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
     - Card updated
     - Card comment created
     - Card attachment created
+    - Card user assigned
 - Calls
     - Update card
+    - Attach URL to card
 
 ## Jenkins
 
+- Hooks
+    - Commit built
 - Calls
     - Build job
 
@@ -50,11 +56,14 @@ var events = porcupine.getEvents();
 
 var config = {
   github : {
-    oauthToken : 'your_token'
+    oauthToken : 'your-token',
+    secret : 'your-secret'
   },
   trello : {
-    key : 'your_key',
-    token : 'your_token'
+    key : 'your-key',
+    token : 'your-token',
+    secret : 'your-secret',
+    callBackUrl : 'https://your-porcupine-url/trello'
   }
 };
 
@@ -100,7 +109,8 @@ The configs will also enable each one of the integrations so, if not setted, the
 ```js
 var config = {
   github : {
-    oauthToken : 'your_token'
+    oauthToken : 'your-token',
+    secret : 'create-your-own-secret'
   }
 };
 ```
@@ -110,8 +120,10 @@ var config = {
 ```js
 var config = {
   trello : {
-    key : 'your_key',
-    token : 'your_token'
+    key : 'your-key',
+    token : 'your-token'
+    secret : 'your-secret',
+    callBackUrl : 'https://your-porcupine-url/trello'
   }
 };
 ```
@@ -121,9 +133,10 @@ var config = {
 ```js
 var config = {
   jenkins : {
-    baseUrl : 'http://your_jenkins_url.com',
-    user : 'jenkins_user',
-    pass : 'jenkins_pass'
+    baseUrl : 'https://your-jenkins-url.com',
+    user : 'jenkins-user',
+    pass : 'jenkins-pass',
+    secret : 'create-your-own-secret'
   }
 };
 ```
@@ -136,7 +149,8 @@ To use hooks you have to create them for Trello and GitHub. The easiest way is t
 
 You can find more information about GitHub hooks [here](http://developer.github.com/v3/repos/hooks/).
 
-- [Create a token](https://github.com/settings/applications)
+- [Create a token](https://github.com/settings/applications) *(grant access to `repo` and `admin:repo_hook`)*
+
 - [Create a hook](http://developer.github.com/v3/repos/hooks/#create-a-hook):
 
 ```
@@ -163,7 +177,8 @@ Body:
   "config": {
     "url": "https://:your_installation_url:/github",
     "content_type": "json",
-    "insecure_ssl": "1"
+    "insecure_ssl": "1",
+    "secret": "your-secret"
   }
 }
 ```
@@ -215,6 +230,13 @@ Method: POST
 URL: https://trello.com/1/tokens/:token:/webhooks/?key=:key:
 ```
 
+*There is a Trello bug with this API call that forces you to send some headers:*
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
 Body:
 
 ```json
@@ -243,6 +265,57 @@ URL: https://trello.com/1/tokens/:token:/webhooks/:hook_id:/?key=:key:
 
 - Accepts self-signed certificates;
 - It's not possible to use a different port than 443 for HTTPS on hooks;
+
+## Jenkins hooks
+
+Jenkins hooks have to be called inside your job script.
+
+Porcupine is expecting two headers:
+
+ - `x-jenkins-signature`: A sha1 hmac hash of the content using the configured secret on config.secret
+ - `x-jenkins-event`: A string that defines the hook event
+
+### Events
+
+The supported events are:
+
+- `commit`: This event is used for continuous integration and should contain the commit hash, the status of the build, job name and the build URL, for example:
+
+```json
+{
+    "commit" : "574607f5e8a49a2c82475737484f193856d4b430",
+    "status" : true,
+    "job" : "job-name",
+    "buildUrl" : "https://jenkins-url/job/job-name/1"
+}
+```
+
+Possible statuses are: `pending`, `success`, `error` and `failure`
+
+### How to do it
+
+Here goes an example using bash:
+
+```bash
+SECRET="your-secret"
+
+LOAD="{\"commit\":\"${COMMIT}\",\"status\":\"pending\",\"job\":\"${JOB_NAME}\",\"buildUrl\":\"${BUILD_URL}\"}"
+SECURITY=`echo -n $LOAD | openssl sha1 -hmac $SECRET | sed 's/^.* //'`
+curl -d $LOAD -H "Content-Type: application/json" -H "x-jenkins-signature: ${SECURITY}" -H "x-jenkins-event: commit" https://your-porcupine-url/jenkins
+
+ant build
+
+if [ $? -eq 0 ]
+then
+    STATUS="success"
+else
+    STATUS="failure"
+fi
+
+LOAD="{\"commit\":\"${COMMIT}\",\"status\":\"${STATUS}\",\"job\":\"${JOB_NAME}\",\"buildUrl\":\"${BUILD_URL}\"}"
+SECURITY=`echo -n $LOAD | openssl sha1 -hmac $SECRET | sed 's/^.* //'`
+curl -d $LOAD -H "Content-Type: application/json" -H "x-jenkins-signature: ${SECURITY}" -H "x-jenkins-event: commit" https://your-porcupine-url/jenkins
+```
 
 # Example
 

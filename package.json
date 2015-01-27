@@ -1,6 +1,6 @@
 {
   "name" : "porcupine",
-  "version" : "0.1.2",
+  "version" : "0.2.0",
   "description" : "Service to integrate development tools",
   "author" : {
     "name" : "Natue",
@@ -27,9 +27,9 @@
     "node" : ">=0.10.0"
   },
   "dependencies" : {
-    "express" : "~4.9.0",
-    "request" : "~2.42.0",
-    "body-parser" : "~1.8.1"
+    "express" : "~4.10.2",
+    "request" : "~2.48.0",
+    "body-parser" : "~1.9.2"
   },
   "devDependencies" : {
     "nodeunit" : "~0.9.0",

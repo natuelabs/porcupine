@@ -9,6 +9,7 @@ function Github ( config ) {
   this.config = config;
   this.request = require( 'request' );
   this.events = require( './events' );
+  this.crypto = require( 'crypto' );
   this.eventEmitter = require( './eventEmitter' );
   this.apiUrl = 'https://api.github.com';
   this.userAgent = 'Porcupine';
@@ -32,7 +33,17 @@ Github.prototype.initEvents = function () {
 
   this.eventEmitter.on(
     this.events.github.issueComment.create,
-      this.handleIssueCommentCreate.bind( this )
+    this.handleIssueCommentCreate.bind( this )
+  );
+
+  this.eventEmitter.on(
+    this.events.github.issueMember.create,
+    this.handleIssueMemberCreate.bind( this )
+  );
+
+  this.eventEmitter.on(
+    this.events.github.commit.status,
+    this.handleCommitStatus.bind( this )
   );
 };
 
@@ -87,6 +98,12 @@ Github.prototype.callApi = function ( apiPath, method, data, callback ) {
 Github.prototype.process = function ( req ) {
   var type = req.get( 'X-Github-Event' );
 
+  if ( this.validateRequest( req ) === false ) {
+    console.log( '[-->] GitHub request is invalid' );
+
+    return false;
+  }
+
   switch ( type ) {
     case 'issue':
       this.processIssue( req );
@@ -101,6 +118,26 @@ Github.prototype.process = function ( req ) {
       this.processRelease( req );
       break;
   }
+};
+
+/**
+ * Validate request
+ *
+ * @param req
+ */
+Github.prototype.validateRequest = function ( req ) {
+  if ( this.config.secret === undefined ) {
+    console.log( '[-->] GitHub security is not in use' );
+
+    return true;
+  }
+
+  var hash = this.crypto.createHmac( 'sha1', this.config.secret )
+    .update( JSON.stringify( req.body ) );
+
+  var calculatedSignature = 'sha1=' + hash.digest( 'hex' );
+
+  return calculatedSignature === req.headers[ 'x-hub-signature' ];
 };
 
 /**
@@ -342,6 +379,61 @@ Github.prototype.handleIssueCommentCreate = function ( data, callback ) {
     'POST',
     {
       body : data.body
+    },
+    processData
+  );
+};
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Github.prototype.handleIssueMemberCreate = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    callback( error );
+  };
+
+  this.callApi(
+    '/repos/' + data.owner + '/' + data.repo + '/issues/' + data.card.id,
+    'PATCH',
+    {
+      assignee : data.username
+    },
+    processData
+  );
+};
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Github.prototype.handleCommitStatus = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    callback( error );
+  };
+
+  this.callApi(
+    '/repos/' + data.owner + '/' + data.repo + '/statuses/' + data.commit,
+    'POST',
+    {
+      state : data.status,
+      target_url : data.buildUrl
     },
     processData
   );
