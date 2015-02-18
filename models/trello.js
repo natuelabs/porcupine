@@ -40,6 +40,11 @@ Trello.prototype.initEvents = function () {
     this.events.trello.card.read,
     this.handleCardRead.bind( this )
   );
+
+  this.eventEmitter.on(
+    this.events.trello.cardLabel.create,
+    this.handleCardLabelCreate.bind( this )
+  );
 };
 
 /**
@@ -487,6 +492,38 @@ Trello.prototype.handleCardRead = function ( data, callback ) {
     '/cards/' + data.id,
     'GET',
     {},
+    processData
+  );
+};
+
+
+/**
+ * @see events documentation
+ *
+ * @param data
+ * @param callback
+ */
+Trello.prototype.handleCardLabelCreate = function ( data, callback ) {
+  var processData = function ( error, response ) {
+    if ( error ) {
+      callback( error, response );
+
+      return;
+    }
+
+    callback( error, undefined );
+  };
+
+  if ( data.card === undefined ) {
+    data.card = {};
+  }
+
+  this.callApi(
+    '/cards/' + data.card.id + '/idLabels/',
+    'POST',
+    {
+      value : data.id
+    },
     processData
   );
 };

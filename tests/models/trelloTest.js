@@ -1076,4 +1076,88 @@ exports.testModelTrello = {
       test.done();
     },
   },
+
+  /**
+   * handleCardLabelCreate method
+   */
+  handleCardLabelCreate : {
+
+    /**
+     * handleCardRead callApi
+     *
+     * @param test
+     */
+    callApi : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+      var dataTest = {
+        id : 'idTest',
+        card : {
+          id : 'idCard'
+        }
+      };
+
+      trello.callApi = function ( apiPath, method ) {
+        test.strictEqual( apiPath, '/cards/' + dataTest.card.id + '/idLabels/');
+        test.strictEqual( method, 'POST' );
+      };
+
+      trello.handleCardLabelCreate( dataTest, function () {
+      } );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackSuccess
+     *
+     * @param test
+     */
+    callbackSuccess : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( false, undefined );
+      };
+
+      trello.handleCardLabelCreate(
+        {
+        },
+        function ( error, response ) {
+          test.strictEqual( error, false );
+          test.strictEqual( response, undefined );
+        }
+      );
+
+      test.done();
+    },
+
+    /**
+     * handleCardCommentCreate callbackError
+     *
+     * @param test
+     */
+    callbackError : function ( test ) {
+      test.expect( 2 );
+
+      var trello = new Trello( {} );
+
+      trello.callApi = function ( apiPath, method, data, callback ) {
+        callback( true, { test : true } );
+      };
+
+      trello.handleCardLabelCreate(
+        {},
+        function ( error, response ) {
+          test.strictEqual( error, true );
+          test.strictEqual( response.test, true );
+        }
+      );
+
+      test.done();
+    },
+  },
 };

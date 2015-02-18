@@ -311,6 +311,21 @@ var events = {
       boardMoved : 'trello__card__boardMove'
     },
 
+    cardLabel : {
+      /**
+       * data = {
+       *  id,
+       *  card : {
+       *    id
+       *  }
+       * }
+       *
+       * @param data
+       * @param callback
+       */
+      create : 'trello__cardLabel__create'
+    },
+
     cardComment : {
       /**
        * data = {
