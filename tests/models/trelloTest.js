@@ -1014,7 +1014,7 @@ exports.testModelTrello = {
     },
 
     /**
-     * handleCardCommentCreate callbackSuccess
+     * handleCardRead callbackSuccess
      *
      * @param test
      */
@@ -1052,7 +1052,7 @@ exports.testModelTrello = {
     },
 
     /**
-     * handleCardCommentCreate callbackError
+     * handleCardRead callbackError
      *
      * @param test
      */
@@ -1083,7 +1083,7 @@ exports.testModelTrello = {
   handleCardLabelCreate : {
 
     /**
-     * handleCardRead callApi
+     * handleCardLabelCreate callApi
      *
      * @param test
      */
@@ -1110,7 +1110,7 @@ exports.testModelTrello = {
     },
 
     /**
-     * handleCardCommentCreate callbackSuccess
+     * handleCardLabelCreate callbackSuccess
      *
      * @param test
      */
@@ -1136,7 +1136,7 @@ exports.testModelTrello = {
     },
 
     /**
-     * handleCardCommentCreate callbackError
+     * handleCardLabelCreate callbackError
      *
      * @param test
      */
