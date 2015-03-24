@@ -92,7 +92,7 @@ Slack.prototype.processCommand = function ( req, res ) {
   var data = {
     response : res,
     teamId : req.body.team_id,
-    teamDomain : req.body.team_id,
+    teamDomain : req.body.team_domain,
     channelId : req.body.channel_id,
     channelName : req.body.channel_name,
     userId : req.body.user_id,
