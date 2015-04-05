@@ -42,6 +42,12 @@ Porcupine will help you to integrate development tools using NodeJS in an easy a
 - Calls
     - Build job
 
+## Slack
+
+- Hooks
+    - Command called
+- Calls
+    - Send message
 
 # How to use it
 
@@ -137,6 +143,17 @@ var config = {
     user : 'jenkins-user',
     pass : 'jenkins-pass',
     secret : 'create-your-own-secret'
+  }
+};
+```
+
+## Slack
+
+```js
+var config = {
+  slack : {
+    incomingHookUrl : 'https://slack-incoming-hook-url.com'
+    token : 'your-token'
   }
 };
 ```
@@ -316,6 +333,20 @@ LOAD="{\"commit\":\"${COMMIT}\",\"status\":\"${STATUS}\",\"job\":\"${JOB_NAME}\"
 SECURITY=`echo -n $LOAD | openssl sha1 -hmac $SECRET | sed 's/^.* //'`
 curl -d $LOAD -H "Content-Type: application/json" -H "x-jenkins-signature: ${SECURITY}" -H "x-jenkins-event: commit" https://your-porcupine-url/jenkins
 ```
+
+## Slack hooks
+
+You can configure slack commands to call Porcupine and for that you just have to configure the token and add the URL to Slack:
+
+`https://:your_installation_url:/slack?porcupine-event=command`
+
+**IMPORTANT**: The hook from Slack can receive an answer so the callback registered to this hook will receive a `response` on the `data` and the response have to be done:
+ 
+ ```js
+ data.response.send();
+ ```
+
+You can also setup an Incoming WebHooks on Slack and use Porcupine to send messages, just add the hook URL to the configuration.
 
 # Example
 

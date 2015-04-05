@@ -311,6 +311,21 @@ var events = {
       boardMoved : 'trello__card__boardMove'
     },
 
+    cardLabel : {
+      /**
+       * data = {
+       *  id,
+       *  card : {
+       *    id
+       *  }
+       * }
+       *
+       * @param data
+       * @param callback
+       */
+      create : 'trello__cardLabel__create'
+    },
+
     cardComment : {
       /**
        * data = {
@@ -458,6 +473,40 @@ var events = {
        * @param callback
        */
       build : 'jenkins__job__build'
+    }
+  },
+
+  slack : {
+    command : {
+      /**
+       * response = {
+       *  response,
+       *  teamId,
+       *  teamDomain,
+       *  channelId,
+       *  channelName,
+       *  userId,
+       *  userName,
+       *  command,
+       *  text
+       * }
+       *
+       * @return response
+       */
+      called : 'slack__command__called'
+    },
+
+    message : {
+      /**
+       * data = {
+       *  channel,
+       *  text
+       * }
+       *
+       * @param data
+       * @param callback
+       */
+      send : 'slack__message__send'
     }
   }
 };

@@ -18,6 +18,7 @@ Porcupine.prototype.init = function ( config, port ) {
   }
 
   server.use( bodyParser.json() );
+  server.use( bodyParser.urlencoded( { extended: true } ) );
 
   var serverModels = {};
 

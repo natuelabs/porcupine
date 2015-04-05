@@ -1,9 +1,9 @@
 'use strict';
 
-var trello = require( '../../routes/trello' );
+var slack = require( '../../routes/slack' );
 var consoleLog;
 
-exports.testRouteTrello = {
+exports.testRouteSlack = {
 
   /**
    * Set up the test
@@ -30,39 +30,19 @@ exports.testRouteTrello = {
   },
 
   /**
-   * head
-   *
-   * @param test
-   */
-  head : function ( test ) {
-    test.expect( 1 );
-
-    var req = { };
-    var res = {
-      json : function () {
-        test.ok( true );
-      }
-    };
-
-    trello.head( req, res );
-
-    test.done();
-  },
-
-  /**
    * post
    *
    * @param test
    */
   post : function ( test ) {
-    test.expect( 2 );
+    test.expect( 1 );
 
     var req = {
       test : true,
       app : {
         'get' : function () {
           return {
-            trello : {
+            slack : {
               process : function ( testReq ) {
                 test.strictEqual( testReq.test, true );
               }
@@ -72,13 +52,7 @@ exports.testRouteTrello = {
       }
     };
 
-    var res = {
-      json : function () {
-        test.ok( true );
-      }
-    };
-
-    trello.post( req, res );
+    slack.post( req, { } );
 
     test.done();
   },

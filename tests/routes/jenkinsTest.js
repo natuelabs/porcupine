@@ -1,9 +1,9 @@
 'use strict';
 
-var trello = require( '../../routes/trello' );
+var jenkins = require( '../../routes/jenkins' );
 var consoleLog;
 
-exports.testRouteTrello = {
+exports.testRouteJenkins = {
 
   /**
    * Set up the test
@@ -30,26 +30,6 @@ exports.testRouteTrello = {
   },
 
   /**
-   * head
-   *
-   * @param test
-   */
-  head : function ( test ) {
-    test.expect( 1 );
-
-    var req = { };
-    var res = {
-      json : function () {
-        test.ok( true );
-      }
-    };
-
-    trello.head( req, res );
-
-    test.done();
-  },
-
-  /**
    * post
    *
    * @param test
@@ -62,7 +42,7 @@ exports.testRouteTrello = {
       app : {
         'get' : function () {
           return {
-            trello : {
+            jenkins : {
               process : function ( testReq ) {
                 test.strictEqual( testReq.test, true );
               }
@@ -78,7 +58,7 @@ exports.testRouteTrello = {
       }
     };
 
-    trello.post( req, res );
+    jenkins.post( req, res );
 
     test.done();
   },
